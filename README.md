@@ -10,7 +10,7 @@ Every script here once fed a Power BI table from a live database. Names of compa
 
 | Script | Engine | Lines | What it does | Before → after |
 |---|---|---|---|---|
-| [`postgres/po-view/PO VIEW optimized.sql`](postgres/po-view/PO%20VIEW%20optimized.sql) | PostgreSQL 16 (Citus) | 2,288 | Purchase-order tracking view: PO lines matched to shipments, lead times, SLA exceptions, customs, invoices, one row per PO line per shipment | **4 min 54 s → 15 s**, same 3,600 rows, no index added |
+| [`SQL/PO_VIEW.sql`](https://github.com/rusloc/SQL/blob/main/SQL/PO_VIEW.sql) | PostgreSQL 16 (Citus) | 2,288 | Purchase-order tracking view: PO lines matched to shipments, lead times, SLA exceptions, customs, invoices, one row per PO line per shipment | **4 min 54 s → 15 s**, same 3,600 rows, no index added |
 
 More scripts land here as they are anonymized. Each one gets a folder with the script, a `NOTES.md` on what was changed and why, and the before and after numbers.
 
