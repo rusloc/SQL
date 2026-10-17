@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQL, read not run</title>
+<meta name="description" content="Production SQL from real BI work, anonymized and published to be read. PostgreSQL views behind Power BI tables, before and after optimization.">
+<style>
+  :root {
+    --bg: #faf9f6; --fg: #1d1d1b; --muted: #6b6a66; --line: #e4e2dc;
+    --card: #ffffff; --accent: #0f6e56; --accent-soft: #e3f2ec; --code-bg: #f1efe9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141413; --fg: #ebe9e3; --muted: #9b998f; --line: #2a2a27;
+      --card: #1c1c1a; --accent: #5fd0a8; --accent-soft: #15302a; --code-bg: #1f1f1c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141413; --fg: #ebe9e3; --muted: #9b998f; --line: #2a2a27;
+    --card: #1c1c1a; --accent: #5fd0a8; --accent-soft: #15302a; --code-bg: #1f1f1c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.55 Georgia, "Times New Roman", serif; }
+  main { max-width: 820px; margin: 0 auto; padding: 56px 16px 80px; }
+  h1 { font-size: 2.4rem; line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.01em; }
+  h2 { font-size: 1.35rem; margin: 48px 0 12px; }
+  p.lead { font-size: 1.15rem; color: var(--muted); margin: 0 0 32px; }
+  .hero { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center;
+          background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; }
+  .hero .num { font-size: 2.2rem; font-weight: 700; line-height: 1; }
+  .hero .lbl { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px; }
+  .hero .arrow { font-size: 1.6rem; color: var(--accent); }
+  .hero .after .num { color: var(--accent); }
+  .hero .note { grid-column: 1 / -1; color: var(--muted); font-size: 0.95rem; margin: 6px 0 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; margin: 14px 0; }
+  .card h3 { margin: 0 0 6px; font-size: 1.1rem; }
+  .card .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 8px; }
+  .card a { color: var(--accent); text-decoration: none; border-bottom: 1px solid currentColor; }
+  .pill { display: inline-block; background: var(--accent-soft); color: var(--accent); border-radius: 999px;
+          padding: 2px 10px; font-size: 0.8rem; margin-right: 6px; font-family: ui-monospace, Consolas, monospace; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+        overflow-x: auto; font: 14px/1.5 ui-monospace, Consolas, "Courier New", monospace; }
+  code { font-family: ui-monospace, Consolas, "Courier New", monospace; font-size: 0.92em; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 0; font-size: 0.97rem; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  ul { padding-left: 22px; } li { margin: 4px 0; }
+  footer { margin-top: 56px; color: var(--muted); font-size: 0.92rem; border-top: 1px solid var(--line); padding-top: 18px; }
+  footer a { color: var(--accent); text-decoration: none; }
+  @media (max-width: 560px) { .hero { grid-template-columns: 1fr; } .hero .arrow { display: none; } h1 { font-size: 1.9rem; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>SQL, read not run</h1>
+  <p class="lead">Production SQL from real BI work, anonymized and published to be read. Every script here once fed a Power BI table from a live database. The names are gone; the logic, the structure and every optimization are exactly what runs in production.</p>
+
+  <section class="hero" aria-label="Before and after">
+    <div class="before"><div class="num">4 min 54 s</div><div class="lbl">PO view, before</div></div>
+    <div class="arrow" aria-hidden="true">&rarr;</div>
+    <div class="after"><div class="num">15 s</div><div class="lbl">PO view, after</div></div>
+    <p class="note">Same 3,600 rows, checked one to one. No index added, no memory or cache setting touched. Only the query changed.</p>
+  </section>
+
+  <h2>Catalog</h2>
+  <article class="card">
+    <h3><a href="https://github.com/rusloc/SQL/blob/main/SQL/PO_VIEW.sql">PO_VIEW.sql</a></h3>
+    <div class="meta"><span class="pill">PostgreSQL 16</span><span class="pill">Citus</span><span class="pill">2,288 lines</span><span class="pill">29 tables</span></div>
+    <p>Purchase-order tracking view: PO lines matched to shipments, lead times and SLA exceptions, customs, invoices. One row per PO line per shipment, with the remaining quantity as its own line until it reaches zero.</p>
+  </article>
+  <p style="color:var(--muted)">More scripts land here as they are anonymized. Each gets a folder with the script, a <code>NOTES.md</code> on what changed and why, and the before and after numbers.</p>
+
+  <h2>The deploy pattern</h2>
+  <p>Each file is self-contained: the query goes into a session variable with dollar quoting, then into a <code>sql_source</code> table keyed by report and page. The semantic model reads one row. Editing the file changes nothing on its own: edit, run, refresh, commit.</p>
+<pre><code>set dev.po_view =
+$sql$
+    ...the query...
+$sql$;
+
+update sql_source
+set  _code    = current_setting ( 'dev.po_view' )
+    ,_updated = now()
+where 1=1
+    and _report = 'TRACKER'
+    and _page   = 'PO VIEW';</code></pre>
+
+  <h2>How the PO view got 19x faster</h2>
+  <table>
+    <thead><tr><th>Change</th><th>Before</th><th>After</th></tr></thead>
+    <tbody>
+      <tr><td>Costs</td><td>aggregated for every shipment in every domain, 6.6M rows, 2.4 GB</td><td>only the shipments in scope</td></tr>
+      <tr><td>Shipment JSON</td><td>decompressed about 250 times per row, 286 separate reads</td><td>parsed once into a CTE, then hash joins</td></tr>
+      <tr><td>Port names</td><td>port table scanned once per output row, twice</td><td>one join</td></tr>
+      <tr><td>Shipments, tracker view</td><td>read twice</td><td>read once, relevant serials only</td></tr>
+      <tr><td>SLA map</td><td>built once per row</td><td>built once per company</td></tr>
+    </tbody>
+  </table>
+  <p>The biggest single win was not the big tables. Two per-row lookups on a small port table took 73 percent of the old run time and moved hundreds of gigabytes through the buffer cache. The planner expected 14 trillion rows at one window step; 1,600 came out.</p>
+
+  <h2>House style</h2>
+  <ul>
+    <li>Keywords lowercase. One column per line, leading commas.</li>
+    <li>Every output column gets a <code>_</code> alias, no <code>as</code>, right-aligned into one block.</li>
+    <li>One-letter table aliases. <code>where 1=1</code>, then one <code>and</code> per line, so any filter can be toggled.</li>
+    <li><code>case</code> / <code>when</code> / <code>then</code> stepped one indent per level.</li>
+  </ul>
+
+  <h2>What anonymized means here</h2>
+  <ul>
+    <li>Company, system, client and report identifiers renamed consistently across table names, column names, literals and comments.</li>
+    <li>Site names, airport and partner codes, debug serials replaced with placeholders.</li>
+    <li>Nothing else changed. None of the scripts will run outside its source database, and that is the point.</li>
+  </ul>
+
+  <footer>
+    The story behind the PO view: <a href="https://vosk.dev">vosk.dev</a> &middot; the read-only MCP that made it possible: <a href="#">sqldev-mcp</a> &middot; <a href="https://github.com/rusloc/SQL">github.com/rusloc/SQL</a>
+  </footer>
+</main>
+</body>
+</html>
